@@ -44,6 +44,9 @@ doc.image(motifImage,( doc.page.width - 250) / 2, doc.y, { width: 250 });
 addPageNumber(doc, 1);
 
 doc.addPage();
+
+doc.image("./src/assets/logo.png", 45, 20, { width: 300 });
+doc.moveDown(2);
 doc.font("Helvetica-Bold").text("Motif description");
 doc.moveDown(0.5);
 doc.font("Helvetica").text("Knitted for You makes it even easier — see how the motif fits on a sweater and get size calculations based on your yarn tension. Simple. Modern. Joyful.");
@@ -56,6 +59,9 @@ doc.fillColor("black").font("Helvetica-Bold").text("Details");
 doc.moveDown(0.5);
 doc.font("Helvetica").text(`${width} x ${height} snitches (width x height)`);
 doc.text("Colors used: " + colors.join(", "));
+
+doc.moveDown(8);
+doc.text("Created with love by Knitters design with tools from Knitted for You");
 addPageNumber(doc, 2);
 
 doc.addPage();
