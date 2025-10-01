@@ -1,10 +1,15 @@
 import fs from "fs";
 import PDFDocument from "pdfkit";
-
 // ---------------------- Load JSON ----------------------
 const motifJsonPath = "./src/motif.json"; // your JSON file path
 const motifData = JSON.parse(fs.readFileSync(motifJsonPath, "utf8"));
 
+const { userName, motifName, motifImage } = {
+  userName: "Your Name",
+  motifName: "Your Motif Name",
+  motifImage: "./src/assets/image.png",
+  motifLinkAddress: "https://motif.knittedforyou.com/root/1237-bunny-with-bow.html",
+};
 const { width, height, colors, rows } = motifData;
 
 if (!width || !height || !Array.isArray(rows)) {
@@ -16,15 +21,50 @@ const doc = new PDFDocument({
   size: [650, 850], // width, height in points
   margins: { top: 50, bottom: 50, left: 50, right: 50 },
 });
-doc.pipe(fs.createWriteStream("knitting_chart.pdf"));
-// Header
-doc.image("./src/assets/logo.png", 45, 20, { width: 300 });
-doc.moveDown(2);
-doc.fontSize(13).text("Knitting motif, motifName created by userName ");
-doc.moveDown(2);
-// ---------------------- Chart Dimensions ----------------------
 const pageWidth = 620;
 const pageHeight = 720;
+
+
+doc.pipe(fs.createWriteStream("knitting_chart.pdf"));
+
+
+// Header
+doc.image("./src/assets/logo.png", 45, 20, { width: 300 });
+
+doc.moveDown(8);
+doc.fontSize(24).font("Helvetica-Bold").text(motifName, {
+  align: "center",
+});
+
+doc.moveDown(0.5);
+doc.fontSize(14).font("Helvetica").text("PDF Download", {align: "center"});
+
+doc.moveDown(8);
+doc.image(motifImage,( doc.page.width - 250) / 2, doc.y, { width: 250 });
+addPageNumber(doc, 1);
+
+doc.addPage();
+doc.font("Helvetica-Bold").text("Motif description");
+doc.moveDown(0.5);
+doc.font("Helvetica").text("Knitted for You makes it even easier — see how the motif fits on a sweater and get size calculations based on your yarn tension. Simple. Modern. Joyful.");
+doc.fillColor("blue").text("https://motif.knittedforyou.com/root/1237-bunny-with-bow.html", {
+  link: "https://motif.knittedforyou.com/root/1237-bunny-with-bow.html",
+  underline: true,
+});
+doc.moveDown(2);
+doc.fillColor("black").font("Helvetica-Bold").text("Details");
+doc.moveDown(0.5);
+doc.font("Helvetica").text(`${width} x ${height} snitches (width x height)`);
+doc.text("Colors used: " + colors.join(", "));
+addPageNumber(doc, 2);
+
+doc.addPage();
+
+doc.image("./src/assets/logo.png", 45, 20, { width: 300 });
+doc.moveDown(2);
+doc.fontSize(13).text(`Knitting motif, ${motifName} created by ${userName} `);
+doc.moveDown(2);
+// ---------------------- Chart Dimensions ----------------------
 
 let boxWidth = Math.floor(pageWidth / width);
 let boxHeight = Math.floor(pageHeight / height);
@@ -84,15 +124,29 @@ for (let col = 0; col < width; col++) {
 doc.moveDown(4);
 doc.fontSize(10.5);
 doc.text("The chart was created on ", (doc.x = 50), doc.y, { continued: true });
-doc.text("https://motif.knittedforyou.com", {
+doc.fillColor("blue").text("https://motif.knittedforyou.com", {
   link: "https://motif.knittedforyou.com",
   underline: true,
   continued: true,
 });
-doc.text(". The ultimate website to use for knitting with more colors.", {
+doc.fillColor("black").text(". The ultimate website to use for knitting with more colors.", {
   underline: false,
   link: null,
 });
-
+addPageNumber(doc, 3);
 // ---------------------- Save PDF ----------------------
 doc.end();
+
+
+
+
+
+function addPageNumber(doc, currentPage) {
+  const text = `${currentPage} / 3`;
+  const y = doc.page.height - 80; // 30pt from bottom
+  doc.fontSize(10)                   // small text
+     .text(text, 0, y, { 
+       width: doc.page.width,       // span entire width
+       align: 'center'              // center horizontally
+     });
+}
