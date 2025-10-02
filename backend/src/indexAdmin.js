@@ -1,14 +1,29 @@
 import fs from "fs";
 import PDFDocument from "pdfkit";
+import { createInterface } from "node:readline/promises";
 // ---------------------- Load JSON ----------------------
 const motifJsonPath = "./src/motif.json"; // your JSON file path
 const motifData = JSON.parse(fs.readFileSync(motifJsonPath, "utf8"));
+
+const rL = createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+let motifColors = [];
+let motifLinkAddress = "";
+const colorAnswer = await rL.question(
+  "Enter each color from right to left (colornames separated by space): "
+);
+const motiflinkAnswer = await rL.question("Enter the motif link address: ");
+motifColors = colorAnswer.split(" ");
+
+console.log("You entered:", motifColors, "and", motiflinkAnswer);
+rL.close();
 
 const { userName, motifName, motifImage } = {
   userName: "Your Name",
   motifName: "Your Motif Name",
   motifImage: "./src/assets/image.png",
-  motifLinkAddress: "https://motif.knittedforyou.com/root/1237-bunny-with-bow.html",
 };
 const { width, height, colors, rows } = motifData;
 
@@ -24,9 +39,7 @@ const doc = new PDFDocument({
 const pageWidth = 620;
 const pageHeight = 720;
 
-
 doc.pipe(fs.createWriteStream("knitting_chart.pdf"));
-
 
 // Header
 doc.image("./src/assets/logo.png", 45, 20, { width: 300 });
@@ -37,10 +50,10 @@ doc.fontSize(24).font("Helvetica-Bold").text(motifName, {
 });
 
 doc.moveDown(0.5);
-doc.fontSize(14).font("Helvetica").text("PDF Download", {align: "center"});
+doc.fontSize(14).font("Helvetica").text("PDF Download", { align: "center" });
 
 doc.moveDown(8);
-doc.image(motifImage,( doc.page.width - 250) / 2, doc.y, { width: 250 });
+doc.image(motifImage, (doc.page.width - 250) / 2, doc.y, { width: 250 });
 addPageNumber(doc, 1);
 
 doc.addPage();
@@ -49,11 +62,17 @@ doc.image("./src/assets/logo.png", 45, 20, { width: 300 });
 doc.moveDown(2);
 doc.font("Helvetica-Bold").text("Motif description");
 doc.moveDown(0.5);
-doc.font("Helvetica").text("Knitted for You makes it even easier — see how the motif fits on a sweater and get size calculations based on your yarn tension. Simple. Modern. Joyful.");
-doc.fillColor("blue").text("https://motif.knittedforyou.com/root/1237-bunny-with-bow.html", {
-  link: "https://motif.knittedforyou.com/root/1237-bunny-with-bow.html",
-  underline: true,
-});
+doc
+  .font("Helvetica")
+  .text(
+    "Knitted for You makes it even easier — see how the motif fits on a sweater and get size calculations based on your yarn tension. Simple. Modern. Joyful."
+  );
+doc
+  .fillColor("blue")
+  .text("https://motif.knittedforyou.com/root/1237-bunny-with-bow.html", {
+    link: "https://motif.knittedforyou.com/root/1237-bunny-with-bow.html",
+    underline: true,
+  });
 doc.moveDown(2);
 doc.fillColor("black").font("Helvetica-Bold").text("Details");
 doc.moveDown(0.5);
@@ -61,7 +80,9 @@ doc.font("Helvetica").text(`${width} x ${height} snitches (width x height)`);
 doc.text("Colors used: " + colors.join(", "));
 
 doc.moveDown(8);
-doc.text("Created with love by Knitters design with tools from Knitted for You.");
+doc.text(
+  "Created with love by Knitters design with tools from Knitted for You."
+);
 addPageNumber(doc, 2);
 
 doc.addPage();
@@ -135,24 +156,50 @@ doc.fillColor("blue").text("https://motif.knittedforyou.com", {
   underline: true,
   continued: true,
 });
-doc.fillColor("black").text(". The ultimate website to use for knitting with more colors.", {
-  underline: false,
-  link: null,
-});
+doc
+  .fillColor("black")
+  .text(". The ultimate website to use for knitting with more colors.", {
+    underline: false,
+    link: null,
+  });
 addPageNumber(doc, 3);
+
+doc.addPage();
+
+doc.image("./src/assets/logo.png", 45, 20, { width: 300 });
+doc.moveDown(2);
+doc.fontSize(13).text(`The chart in stitches: ${width} x ${height}`);
+doc.moveDown(2);
+
+const numRows = motifData.rows.length;
+
+for (let row = 0; row < numRows; row++) {
+  const lineNumber = row + 1; // start from 1
+  const rowData = motifData.rows[row];
+  const reversedRows = [...motifData.rows].reverse();
+  const outputParts = [];
+  const reversedPixels = [...reversedRows[row].pixels].reverse();
+  for (const pixel of reversedPixels) {
+    const colorName = motifColors[pixel.color]; // get color from index
+    outputParts.push(`${pixel.count} ${colorName}`);
+  }
+  const prefix = lineNumber % 2 === 1 ? "left" : "";
+
+  doc.text(`${lineNumber}. ${prefix} ${outputParts.join(", ")}`);
+}
+
+addPageNumber(doc, 4);
+
 // ---------------------- Save PDF ----------------------
 doc.end();
 
-
-
-
-
 function addPageNumber(doc, currentPage) {
-  const text = `${currentPage} / 3`;
+  const text = `${currentPage} / 4`;
   const y = doc.page.height - 80; // 30pt from bottom
-  doc.fontSize(10)                   // small text
-     .text(text, 0, y, { 
-       width: doc.page.width,       // span entire width
-       align: 'center'              // center horizontally
-     });
+  doc
+    .fontSize(10) // small text
+    .text(text, 0, y, {
+      width: doc.page.width, // span entire width
+      align: "center", // center horizontally
+    });
 }
