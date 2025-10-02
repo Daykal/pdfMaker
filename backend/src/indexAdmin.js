@@ -61,7 +61,7 @@ doc.font("Helvetica").text(`${width} x ${height} snitches (width x height)`);
 doc.text("Colors used: " + colors.join(", "));
 
 doc.moveDown(8);
-doc.text("Created with love by Knitters design with tools from Knitted for You");
+doc.text("Created with love by Knitters design with tools from Knitted for You.");
 addPageNumber(doc, 2);
 
 doc.addPage();
