@@ -3,7 +3,7 @@ import PDFDocument from "pdfkit";
 import { createInterface } from "node:readline/promises";
 // ---------------------- Load JSON ----------------------
 const motifJsonPath = "./src/motif.json"; // your JSON file path
-const motifData = JSON.parse(fs.readFileSync(motifJsonPath, "utf8"));
+const localMotifData = JSON.parse(fs.readFileSync(motifJsonPath, "utf8"));
 
 const rL = createInterface({
   input: process.stdin,
@@ -12,20 +12,46 @@ const rL = createInterface({
 let motifColors = [];
 let motifLinkAddress = "";
 const colorAnswer = await rL.question(
-  "Enter each color from right to left (colornames separated by space): "
+  "Enter each color from right to left (colornames separated by comma and space): "
 );
-const motiflinkAnswer = await rL.question("Enter the motif link address: ");
-motifColors = colorAnswer.split(" ");
+const usermotifAnswer = await rL.question(
+  "Enter creators name and motif name (separated by comma and space): "
+);
+const motifLinkAnswer = await rL.question(
+  "Enter motif link address to show it below description page: "
+);
+motifColors = colorAnswer.split(", ");
+motifLinkAddress = motifLinkAnswer.trim();
 
-console.log("You entered:", motifColors, "and", motiflinkAnswer);
+//  while (!remoteMotifData) {
+//   try {
+//     const motiflinkAnswer = await rL.question("Enter the motif link data json address (or Ctrl+C to exit): ");
+//     motifLinkDataAddress = motiflinkAnswer.trim();
+
+//     const res = await fetch(motifLinkDataAddress);
+//     if (!res.ok) {
+//       console.log(`❌ HTTP error: ${res.status}`);
+//       continue;
+//     }
+
+//     remoteMotifData = await res.json();
+//     console.log("✅ Motif data loaded successfully!");
+
+//   } catch (err) {
+//     if (err.name === "AbortError") {
+//       console.log("\n👋 Exiting...");
+//       process.exit(0);
+//     }
+//     console.log("❌ Error fetching link, please try again.");
+//   }
+// }
+
+console.log("You entered:", motifColors);
 rL.close();
+const [userName, motifName] = usermotifAnswer.split(", ");
+const motifImage = "./src/assets/image.png";
 
-const { userName, motifName, motifImage } = {
-  userName: "Your Name",
-  motifName: "Your Motif Name",
-  motifImage: "./src/assets/image.png",
-};
-const { width, height, colors, rows } = motifData;
+const { width, height, colors, rows } = localMotifData;
 
 if (!width || !height || !Array.isArray(rows)) {
   throw new Error("Invalid motif.json: width, height and rows are required");
@@ -69,15 +95,15 @@ doc
   );
 doc
   .fillColor("blue")
-  .text("https://motif.knittedforyou.com/root/1237-bunny-with-bow.html", {
-    link: "https://motif.knittedforyou.com/root/1237-bunny-with-bow.html",
+  .text(motifLinkAddress, {
+    link: motifLinkAddress,
     underline: true,
   });
 doc.moveDown(2);
 doc.fillColor("black").font("Helvetica-Bold").text("Details");
 doc.moveDown(0.5);
 doc.font("Helvetica").text(`${width} x ${height} snitches (width x height)`);
-doc.text("Colors used: " + colors.join(", "));
+doc.text("Colors used: " + motifColors.join(", "));
 
 doc.moveDown(8);
 doc.text(
@@ -171,20 +197,21 @@ doc.moveDown(2);
 doc.fontSize(13).text(`The chart in stitches: ${width} x ${height}`);
 doc.moveDown(2);
 
-const numRows = motifData.rows.length;
+const numRows = localMotifData.rows.length;
 
 for (let row = 0; row < numRows; row++) {
-  const lineNumber = row + 1; // start from 1
-  const rowData = motifData.rows[row];
-  const reversedRows = [...motifData.rows].reverse();
+  const lineNumber = row + 1;
+  const reversedRows = [...localMotifData.rows].reverse();
   const outputParts = [];
   const reversedPixels = [...reversedRows[row].pixels].reverse();
   for (const pixel of reversedPixels) {
     const colorName = motifColors[pixel.color]; // get color from index
     outputParts.push(`${pixel.count} ${colorName}`);
   }
-  const prefix = lineNumber % 2 === 1 ? "left" : "";
-
+  const prefix = lineNumber % 2 === 1 ? "<--" : "";
+  if (lineNumber % 2 === 0) {
+    outputParts.reverse();
+  }
   doc.text(`${lineNumber}. ${prefix} ${outputParts.join(", ")}`);
 }
 
@@ -195,11 +222,9 @@ doc.end();
 
 function addPageNumber(doc, currentPage) {
   const text = `${currentPage} / 4`;
-  const y = doc.page.height - 80; // 30pt from bottom
-  doc
-    .fontSize(10) // small text
-    .text(text, 0, y, {
-      width: doc.page.width, // span entire width
-      align: "center", // center horizontally
-    });
+  const y = doc.page.height - 80;
+  doc.fontSize(10).text(text, 0, y, {
+    width: doc.page.width,
+    align: "center",
+  });
 }
