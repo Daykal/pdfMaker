@@ -2,7 +2,7 @@ import fs from "fs";
 import PDFDocument from "pdfkit";
 import { createInterface } from "node:readline/promises";
 // ---------------------- Load JSON ----------------------
-const motifJsonPath = "./src/motif.json"; // your JSON file path
+const motifJsonPath = "./motif.json"; // your JSON file path
 const localMotifData = JSON.parse(fs.readFileSync(motifJsonPath, "utf8"));
 
 const rL = createInterface({
@@ -49,7 +49,7 @@ motifLinkAddress = motifLinkAnswer.trim();
 console.log("You entered:", motifColors);
 rL.close();
 const [userName, motifName] = usermotifAnswer.split(", ");
-const motifImage = "./src/assets/image.png";
+const motifImage = "./assets/image.png";
 
 const { width, height, colors, rows } = localMotifData;
 
@@ -68,7 +68,7 @@ const pageHeight = 720;
 doc.pipe(fs.createWriteStream("knitting_chart.pdf"));
 
 // Header
-doc.image("./src/assets/logo.png", 45, 20, { width: 300 });
+doc.image("./assets/logo.png", 45, 20, { width: 300 });
 
 doc.moveDown(8);
 doc.fontSize(24).font("Helvetica-Bold").text(motifName, {
@@ -84,7 +84,7 @@ addPageNumber(doc, 1);
 
 doc.addPage();
 
-doc.image("./src/assets/logo.png", 45, 20, { width: 300 });
+doc.image("./assets/logo.png", 45, 20, { width: 300 });
 doc.moveDown(2);
 doc.font("Helvetica-Bold").text("Motif description");
 doc.moveDown(0.5);
@@ -113,7 +113,7 @@ addPageNumber(doc, 2);
 
 doc.addPage();
 
-doc.image("./src/assets/logo.png", 45, 20, { width: 300 });
+doc.image("./assets/logo.png", 45, 20, { width: 300 });
 doc.moveDown(2);
 doc.fontSize(13).text(`Knitting motif, ${motifName} created by ${userName} `);
 doc.moveDown(2);
@@ -192,7 +192,7 @@ addPageNumber(doc, 3);
 
 doc.addPage();
 
-doc.image("./src/assets/logo.png", 45, 20, { width: 300 });
+doc.image("./assets/logo.png", 45, 20, { width: 300 });
 doc.moveDown(2);
 doc.fontSize(13).text(`The chart in stitches: ${width} x ${height}`);
 doc.moveDown(2);

@@ -2,7 +2,7 @@ import fs from "fs";
 import PDFDocument from "pdfkit";
 
 // ---------------------- Load JSON ----------------------
-const motifJsonPath = "./src/motif.json"; // your JSON file path
+const motifJsonPath = "./motif.json"; // your JSON file path
 const motifData = JSON.parse(fs.readFileSync(motifJsonPath, "utf8"));
 
 const { userName, motifName } = {
@@ -21,7 +21,7 @@ const doc = new PDFDocument({
 });
 doc.pipe(fs.createWriteStream("knitting_chart.pdf"));
 // Header
-doc.image("./src/assets/logo.png", 45, 20, { width: 300 });
+doc.image("./assets/logo.png", 45, 20, { width: 300 });
 doc.moveDown(2);
 doc.fontSize(13).text(`Knitting motif, ${motifName} created by ${userName} `);
 doc.moveDown(2);
