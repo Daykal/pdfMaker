@@ -41,7 +41,6 @@ let startY = doc.y;
 const rulerYTop = startY + height * boxHeight + 2;
 const rulerYBottom = rulerYTop + 10; // 10pt below top row - gap between bottom ruler numbers
 // ---------------------- Draw chart ----------------------
-// Draw rows
 rows.forEach((row) => {
   let x = startX;
   const y = startY + row.index * boxHeight;

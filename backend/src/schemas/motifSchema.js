@@ -1,6 +1,6 @@
-const { z } = require("zod");
+import { z } from "zod";
 
-const motifSchema = z.object({
+export const motifSchema = z.object({
   width: z.number().min(1),
   height: z.number().min(1),
   colors: z.array(z.string()),
@@ -16,5 +16,3 @@ const motifSchema = z.object({
     })
   ),
 });
-
-module.exports = { motifSchema };

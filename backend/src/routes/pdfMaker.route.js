@@ -1,9 +1,7 @@
 import express from "express";
-
+import { pdfMakerUser } from "../controllers/pdfMaker.controller.js";
 const router = express.Router();
 
-router.get("/", (req, res) => {
-    res.send("Hello from PDF Maker!");
-});
+router.post("/", pdfMakerUser);
 
 export default router;
