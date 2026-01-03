@@ -40,10 +40,13 @@ export const pdfMakerUser = async (req, res) => {
 // ---------------------- Admin PDF ----------------------
 export const pdfMakerAdmin = async (req, res) => {
   try {
-    const { motifId } = req.body;
+    const { motifId, motifImageLink } = req.body;
 
     if (!motifId) {
-      return res.status(400).json({ message: "motifId is required" });
+      return res.status(400).json({ message: "'motifId': is required" });
+    }
+    if (!motifImageLink) {
+      return res.status(400).json({ message: "'motifImageLink': is required" });
     }
 
     const { data, errors } = validateAndParseMotifInput(req.body);
@@ -53,10 +56,17 @@ export const pdfMakerAdmin = async (req, res) => {
     if (!response.ok)
       return res.status(404).json({ message: "Motif not found" });
 
+    const imageResponse = await fetch(motifImageLink);
+
+    if (!imageResponse.ok) throw new Error("Image not found");
+
+    const imageBuffer = await imageResponse.arrayBuffer(); // get ArrayBuffer
+    const motifBuffer = Buffer.from(imageBuffer);
+
     const fetchedMotif = await response.json();
     const motifData = motifSchema.parse(fetchedMotif);
 
-    const pdfBuffer = await generatePDFAdmin(motifData, data);
+    const pdfBuffer = await generatePDFAdmin(motifData, data, motifBuffer);
 
     res.set({
       "Content-Type": "application/pdf",
@@ -125,7 +135,7 @@ async function generatePDF(motifData, userData) {
   });
 }
 
-async function generatePDFAdmin(motifData, userData) {
+async function generatePDFAdmin(motifData, userData, motifBuffer) {
   const { width, height, colors, rows } = motifData;
   const { userName, motifName, motifLinkAddress, motifColors } = userData;
 
@@ -154,6 +164,7 @@ async function generatePDFAdmin(motifData, userData) {
       .text("PDF Download", { align: "center" });
 
     doc.moveDown(8);
+    doc.image(motifBuffer, (doc.page.width - 250) / 2, doc.y, { width: 250 });
     addPageNumber(doc, 1);
     doc.addPage();
 
