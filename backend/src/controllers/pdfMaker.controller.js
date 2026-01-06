@@ -21,6 +21,14 @@ export const pdfMakerUser = async (req, res) => {
 
     const fetchedMotif = await response.json();
     const motifData = motifSchema.parse(fetchedMotif);
+    if (motifData.rows.length != 48 || motifData.width != 48) {
+      return res
+        .status(400)
+        .send({
+          error:
+            "Currently only motif data with 48 rows and width of 48 is supported.",
+        });
+    }
 
     const pdfBuffer = await generatePDF(motifData, { userName, motifName });
 
@@ -65,6 +73,15 @@ export const pdfMakerAdmin = async (req, res) => {
 
     const fetchedMotif = await response.json();
     const motifData = motifSchema.parse(fetchedMotif);
+
+    if (motifData.rows.length != 48 || motifData.width != 48) {
+      return res
+        .status(400)
+        .send({
+          error:
+            "Currently only motif data with 48 rows and width of 48 is supported.",
+        });
+    }
 
     const pdfBuffer = await generatePDFAdmin(motifData, data, motifBuffer);
 
@@ -163,8 +180,7 @@ async function generatePDFAdmin(motifData, userData, motifBuffer) {
       .font("Helvetica")
       .text("PDF Download", { align: "center" });
 
-    doc.moveDown(8);
-    doc.image(motifBuffer, (doc.page.width - 250) / 2, doc.y, { width: 250 });
+    doc.image(motifBuffer, (doc.page.width - 600) / 2, doc.y, { width: 600 });
     addPageNumber(doc, 1);
     doc.addPage();
 
